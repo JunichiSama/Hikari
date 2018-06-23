@@ -9,7 +9,7 @@ hikari.on("ready", async () => {
 });
 
 hikari.on("message", async message =>{
-  
+
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
@@ -17,6 +17,33 @@ hikari.on("message", async message =>{
   let messageArray = message.content.split(" ");
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
+
+  if(cmd === `${prefix}kick`){
+
+
+  let kUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
+  if(!kUser) return message.channel.send("No Puedo Encontrar al Usuario.");
+  let kReason = args.join("  ").slice(22);
+  if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send("No Puedes usar el Comando!");
+  if(kUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Esa Persona no Puede ser Expulsada");
+
+  let kickEmbed = new Discord.RichEmbed()
+  .setDescription("~Kick~")
+  .setColor("#f44242")
+  .addField("Usuario Expulsado", `${kUser} with ID ${kUser.id} `)
+  .addField("Expulsado Por", `<@${message.author.id}> with ID ${message.author.id} `)
+  .addField("Expulsado En", message.channel)
+  .addField("Hora", message.createdAt)
+  .addField("Razon", kReason);
+
+  let kickChannel = message.guild.channels.find("name", "incidentes");
+  if(!kickChannel) return message.channel.send("No Encuentro el Canal de Incidentes!");
+
+
+ message.guild.member(kUser).kick(kReason);
+  kickChannel.send(kickEmbed);
+    return;
+  }
 
  if(cmd === `${prefix}report`){
 
@@ -41,13 +68,6 @@ hikari.on("message", async message =>{
  reportsChannel.send(reportEmbed);
    return;
  }
-
-
-
-
-
-
-
 
 if(cmd === `${prefix}serverinfo`){
 
