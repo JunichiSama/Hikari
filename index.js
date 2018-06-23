@@ -1,7 +1,26 @@
 const hikariconfig = require ("./hikariconfig.json");
 const Discord = require("discord.js");
-
+const fs = require("fs");
 const hikari = new Discord.Client({disableEveryone: true});
+hikari.commands = new Discord.Collection();
+
+fs.readdir("./comandos/", (err, files) =>{
+
+  if(err) console.log(err);
+
+  let jsfile = files.filter(f => f.split(".").pop() === "js")
+  if(jsfile.length <= 0){
+    console.log("No Encontre Ningun Comando");
+    return;
+  }
+
+
+  jsfile.forEach((f, i) =>{
+  let props = require(`./comandos/${f}`);
+  console.log(`${f} Cargado!`);
+  hikari.commands.set(props.help.name, props);
+  });
+});
 
 hikari.on("ready", async () => {
   console.log(`${hikari.user.username} is online!`);
@@ -18,116 +37,8 @@ hikari.on("message", async message =>{
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
 
-  if(cmd === `${prefix}kick`){
-
-
-  let kUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-  if(!kUser) return message.channel.send("No Puedo Encontrar al Usuario.");
-  let kReason = args.join("  ").slice(22);
-  if(!message.member.hasPermission("KICK_MEMBERS")) return message.channel.send("No Puedes usar el Comando!");
-  if(kUser.hasPermission("KICK_MEMBERS")) return message.channel.send("Esa Persona no Puede ser Expulsada");
-
-  let kickEmbed = new Discord.RichEmbed()
-  .setDescription("~Kick~")
-  .setColor("#42ebf4")
-  .addField("Usuario Expulsado", `${kUser} with ID ${kUser.id} `)
-  .addField("Expulsado Por", `<@${message.author.id}> with ID ${message.author.id} `)
-  .addField("Expulsado En", message.channel)
-  .addField("Hora", message.createdAt)
-  .addField("Razon", kReason);
-
-  let kickChannel = message.guild.channels.find("name", "incidentes");
-  if(!kickChannel) return message.channel.send("No Encuentro el Canal de Incidentes!");
-
-
- message.guild.member(kUser).kick(kReason);
-  kickChannel.send(kickEmbed);
-    return;
-  }
-
-  if(cmd === `${prefix}ban` ){
-
-    let bUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
-    if(!bUser) return message.channel.send("No Puedo Encontrar al Usuario.");
-    let bReason = args.join("  ").slice(22);
-    if(!message.member.hasPermission("BAN_MEMBERS")) return message.channel.send("No Puedes usar el Comando!");
-    if(bUser.hasPermission("BAN_MEMBERS")) return message.channel.send("Esa Persona no Puede ser Expulsada");
-
-    let banEmbed = new Discord.RichEmbed()
-    .setDescription("~Baneado~")
-    .setColor("#41f450")
-    .addField("Usuario Baneado", `${bUser} with ID ${bUser.id} `)
-    .addField("Baneado Por", `<@${message.author.id}> with ID ${message.author.id} `)
-    .addField("Baneado En", message.channel)
-    .addField("Hora", message.createdAt)
-    .addField("Razon", bReason);
-
-    let banChannel = message.guild.channels.find("name", "incidentes");
-    if(!banChannel) return message.channel.send("No Encuentro el Canal de Incidentes!");
-
-
-   message.guild.member(bUser).ban(bReason);
-    banChannel.send(banEmbed);
-
-
-
-    return;
-  }
-
- if(cmd === `${prefix}report`){
-
-
- let rUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
- if(!rUser) return message.channel.send("No Puedo Encontrar a ese Usuario.");
- let reason = args.join("  ").slice(22);
-
- let reportEmbed = new Discord.RichEmbed()
- .setDescription("Reportes")
- .setColor("#f44242")
- .addField("Usuario Reportado", `${rUser} with ID:${rUser.id} ` )
- .addField("Reportado Por", `${message.author} with ID:${message.author.id}`)
- .addField("Canal", message.channel)
- .addField("Hora del Reporte", message.createdAt)
- .addField("Razon del Reporte" , reason);
-
- let reportsChannel = message.guild.channels.find(`name`, "reportes");
- if(!reportsChannel) return message.channel.send("No Puedo Encontrar el Canal.");
-
- message.delete().catch(O_o=>{});
- reportsChannel.send(reportEmbed);
-   return;
- }
-
-if(cmd === `${prefix}serverinfo`){
-
- let totalBot = message.guild.members.filter(member => member.user.bot).size;
- let sicon = message.guild.iconURL;
- let serverembed = new Discord.RichEmbed()
- .setDescription("Informacion del Servidor")
- .setThumbnail(sicon)
- .setColor("#f44242")
- .addField("Nombre del Servidor", message.guild.name)
- .addField("Fecha de Creacion", message.guild.createdAt)
- .addField("Te Uniste El Dia", message.member.joinedAt)
- .addField("Total de Usuarios Unidos", message.guild.memberCount)
- .addField("Total de Bots", totalBot);
-  return message.channel.send(serverembed);
-}
-
-
-
- if(cmd === `${prefix}botinfo`){
- let bicon = hikari.user.displayAvatarURL
- let botembed = new Discord.RichEmbed()
- .setDescription("Informacion del Bot")
- .setColor("#f44242")
- .setThumbnail(bicon)
- .addField("Nombre del Bot", hikari.user.username)
- .addField("Fecha de Creacion", hikari.user.createdAt);
-
-   return message.channel.send(botembed);
- }
-
+  let commandfile = hikari.commands.get(cmd.slice(prefix.length));
+  if(commandfile) commandfile.run(hikari,message,args);
 });
 
 
