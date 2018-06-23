@@ -29,7 +29,7 @@ module.exports.run = async (hikari, message, args) => {
   if(!mutetime) return message.reply("No Especificaste un Tiempo!");
 
   await(toMute.addRole(muterole.id))
-  message.reply(`<@${toMute.id}> ha Sido Muteado for ${ms(mutetime)}`);
+  message.reply(`<@${toMute.id}> ha Sido Muteado for ${ms(ms(mutetime))}`);
 
   setTimeout(function(){
     toMute.removeRole(muterole.id);
