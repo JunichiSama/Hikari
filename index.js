@@ -24,8 +24,8 @@ hikari.on("message", async message =>{
   let kUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
   if(!kUser) return message.channel.send("No Puedo Encontrar al Usuario.");
   let kReason = args.join("  ").slice(22);
-  if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send("No Puedes usar el Comando!");
-  if(kUser.hasPermission("MANAGE_MESSAGES")) return message.channel.send("Esa Persona no Puede ser Expulsada");
+  if(!message.member.hasPermission("KICK_MEMBERS")) return message.channel.send("No Puedes usar el Comando!");
+  if(kUser.hasPermission("KICK_MEMBERS")) return message.channel.send("Esa Persona no Puede ser Expulsada");
 
   let kickEmbed = new Discord.RichEmbed()
   .setDescription("~Kick~")
