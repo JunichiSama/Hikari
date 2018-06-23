@@ -9,6 +9,7 @@ hikari.on("ready", async () => {
 });
 
 hikari.on("message", async message =>{
+  
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
@@ -17,21 +18,27 @@ hikari.on("message", async message =>{
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
 
- if(cmd === `${prefix}report` ){
+ if(cmd === `${prefix}report`){
 
 
  let rUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
  if(!rUser) return message.channel.send("No Puedo Encontrar a ese Usuario.");
  let reason = args.join("  ").slice(22);
 
- let reportEmbed = new Discord.RichEmbed
+ let reportEmbed = new Discord.RichEmbed()
  .setDescription("Reportes")
  .setColor("#f44242")
- .addField("Usuario Reportado", `${rUser}` )
+ .addField("Usuario Reportado", `${rUser} with ID:${rUser.id} ` )
+ .addField("Reportado Por", `${message.author} with ID:${message.author.id}`)
+ .addField("Canal", message.channel)
+ .addField("Hora del Reporte", message.createdAt)
+ .addField("Razon del Reporte" , reason);
 
+ let reportsChannel = message.guild.channels.find(`name`, "reportes");
+ if(!reportsChannel) return message.channel.send("No Puedo Encontrar el Canal.");
 
-
-
+ message.delete().catch(O_o=>{});
+ reportsChannel.send(reportEmbed);
    return;
  }
 
