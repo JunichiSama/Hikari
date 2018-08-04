@@ -23,8 +23,22 @@ fs.readdir("./comandos/", (err, files) =>{
 });
 
 hikari.on("ready", async () => {
-  console.log(`${hikari.user.username} is online!`);
+  console.log(`${hikari.user.username} esta en liñea en ${hikari.guilds.size} servidores!`);
   hikari.user.setActivity("a JunichiSama", {type: "WATCHING"});
+});
+
+hikari.on("guildMemberAdd", async member => {
+  console.log(`${member.id} se ha unido al servidor`);
+
+  let welcomechannel = member.guild.channels.find(`name`, "entrada-salida");
+  welcomechannel.send(`Bienvenido ${member} al Servidor de Abyss Illusion`);
+});
+
+hikari.on("guildMemberRemove", async member => {
+  console.log(`${member.id} a dejado el servidor`);
+
+  let welcomechannel = member.guild.channels.find(`name`, "entrada-salida");
+  welcomechannel.send(`Me Pones Triste al Saber que te vas de Abyss Illusion ${member}`);
 });
 
 hikari.on("message", async message =>{
