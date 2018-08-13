@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const hikari = new Discord.Client({disableEveryone: true});
 hikari.commands = new Discord.Collection();
+let coins = require ("./coins.json");
 
 fs.readdir("./comandos/", (err, files) =>{
 
@@ -41,12 +42,62 @@ hikari.on("guildMemberRemove", async member => {
   welcomechannel.send(`Me Pones Triste al Saber que te vas de Abyss Illusion ${member}`);
 });
 
-hikari.on("message", async message =>{
+hikari.on("channelCreate", async channel => {
+
+  console.log(`${channel.name} a sido creado`);
+  let sChannel = channel.guild.channels.find(`name`, "registros");
+  sChannel.send(`El Canal ${channel} a sido creado!`);
+
+});
+
+hikari.on("channelDelete", async channel => {
+
+  console.log(`${channel.name} a sido borrado`);
+  let sChannel = channel.guild.channels.find(`name`, "registros");
+  sChannel.send(`El Canal ${channel.name} a sido Borrado de este Servidor!`);
+
+});
+
+hikari.on("message", async message => {
 
   if(message.author.bot) return;
   if(message.channel.type === "dm") return;
 
-  let prefix = hikariconfig.prefix;
+  let prefixes = JSON.parse(fs.readFileSync("./prefix.json", "utf8"));
+
+  if(!prefixes[message.guild.id]){
+    prefixes[message.guild.id] = {
+      prefixes: hikariconfig.prefix
+    };
+  }
+
+  if(!coins[message.author.id]){
+  coins[message.author.id] = {
+    coins:0
+  };
+}
+
+let coinAmt = Math.floor(Math.random() * 15) + 1;
+let baseAmt = Math.floor(Math.random() * 15) + 1;
+console.log(`${coinAmt} ; ${baseAmt}`);
+
+if(coinAmt === baseAmt){
+  coins[message.author.id] = {
+    coins: coins[message.author.id].coins + coinAmt
+  };
+  fs.writeFile("./coins.json", JSON.stringify(coins), (err) => {
+    if (err) console.log(err)
+  });
+  let coinEmbed = new Discord.RichEmbed()
+  .setAuthor(message.author.username)
+  .setColor("#0000FF")
+  .addField("💰", `${coinAmt} Monedas Añadidas`);
+
+  message.channel.send(coinEmbed).then(msg => {msg.delete(5000)});
+}
+
+let prefix = prefixes[message.guild.id].prefixes;
+
   let messageArray = message.content.split(" ");
   let cmd = messageArray[0];
   let args = messageArray.slice(1);
